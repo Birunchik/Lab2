@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Lab2 {
-     class Game {
+    class Game {
         public int size;
         public Player Cat { get; }
         public Player Mouse { get; }
@@ -22,17 +22,22 @@ namespace Lab2 {
         }
 
         public void Run() {
-            using (StreamReader sr = new StreamReader(inputFile)) {
-                String? line;
-                while (gameStatus && (line = sr.ReadLine()) != null) {
-                    String[] arr = line.Split(' ');
-                    char com = arr[0].Trim()[0];
-                    int steps;
-                    int.TryParse(arr[1], out steps);
-                        ReadCommanD(com, steps);
+            using (StreamWriter writer = new StreamWriter("output.txt", append: false)) {
+                PrintHeader(writer);
 
-                 
+                using (StreamReader sr = new StreamReader(inputFile)) {
+                    String? line;
+                    int.TryParse(sr.ReadLine(), out size);
+                    while (gameStatus && (line = sr.ReadLine()) != null) {
+                        String[] arr = line.Split(' ');
+                        char com = arr[0].Trim()[0];
+                        int steps;
+                        int.TryParse(arr[1], out steps);
+                        ReadCommanD(com, steps);
+                    }
+
                 }
+                PrintSummary(writer);
             }
         }
 
@@ -45,46 +50,52 @@ namespace Lab2 {
                     Mouse.Move(steps, size);
                     break;
                 case 'P':
-                    PrintInf();
+                    PrintInf(GetDist());
                     break;
                 default:
                     break;
             }
         }
-        private void PrintInf() {
+        private void PrintInf(int dist) {
             string catPos = Cat.state == State.NotInGame ? "??" : Cat.location.ToString();
 
             string mousePos = Mouse.state == State.NotInGame ? "??" : Mouse.location.ToString();
 
-            int dist = GetDist();
             string distStr = dist == -1 ? "" : dist.ToString();
 
-            PrintHeader();
-            Console.WriteLine($"{catPos,5}{mousePos,7}{distStr,10}");
-            
-            
-
+            using (StreamWriter writer = new StreamWriter(outputFile, append: true)) {
+                writer.WriteLine($"{catPos,5}{mousePos,7}{distStr,10}");
+            }
         }
-        public void PrintSummary() {
-            Console.WriteLine("-----------------------");
-            Console.WriteLine();
-            Console.WriteLine($"Distance traveled:   Mouse    Cat");
-            Console.WriteLine($"{Mouse.DistanceTraveled,22}{Cat.DistanceTraveled,7}");
-            Console.WriteLine();
 
+
+        public void PrintHeader(TextWriter writer) {
+            writer.WriteLine("Cat and Mouse\n");
+            writer.WriteLine("  Cat  Mouse   Distance");
+            writer.WriteLine("-----------------------");
         }
-        public void PrintHeader() {
-            Console.WriteLine("Cat and Mouse\n");
-            Console.WriteLine("  Cat  Mouse   Distance");
-            Console.WriteLine("-----------------------");
+
+        public void PrintSummary(TextWriter writer) {
+            writer.WriteLine("-----------------------");
+            writer.WriteLine();
+            writer.WriteLine("Distance traveled:   Mouse    Cat");
+            writer.WriteLine($"{Mouse.DistanceTraveled,22}{Cat.DistanceTraveled,7}");
+            writer.WriteLine();
+            if(GetDist() == 0) {
+                writer.WriteLine($"Cat catch Mouse at: {Cat.location}");
+            }
+            else
+                writer.WriteLine($"Mouse evaded Cat");
+
+
         }
         private int GetDist() {
             if (Mouse.state == State.NotInGame || Cat.state == State.NotInGame) {
                 return -1;
             }
             return Math.Abs(Cat.location - Mouse.location);
-            
+
         }
-        
+
     }
 }
