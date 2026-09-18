@@ -18,8 +18,11 @@ namespace Lab2 {
 
         // логика внутри изза инкапсуляции
         public void Move(int steps, int sizeGame) {
+            if (sizeGame <= 0)
+                return;
+
             state = State.Playing;
-            location = Math.Abs((steps + location) % sizeGame);
+            location = ((location + steps) % sizeGame + sizeGame) % sizeGame;
             DistanceTraveled += Math.Abs(steps);
         }
     }
